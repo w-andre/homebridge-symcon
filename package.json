@@ -1,0 +1,41 @@
+{ 
+	"name": "homebridge-symcon", 
+	"version": "0.0.0", 
+	"description": "homebridge plugin for IP-Symcon", 
+	"main": "index.js", 
+	"scripts": { 
+		"test": "echo \"Error: no test specified\" && exit 1", 
+		"start": "echo \"Error: configure and run homebridge to start\" && exit 1"
+	}, 
+	"engines": { 
+		"node": ">4.0.0", 
+		"homebridge": "^0.2.0"
+	},
+	"repository": { 
+		"type": "git", 
+		"url": "https://github.com/w-andre/homebridge-symcon.git"
+	}, 
+	"keywords": [ 
+		"homebridge-plugin", 
+		"homebridge", 
+		"IPS", 
+		"Symcon", 
+		"IP-Symcon"
+	], 
+	"dependencies": {
+		"node-json-rpc": "",
+		"async": "",
+		"fs": ""
+	}, 
+	"author": { 
+		"name": "andre", 
+		"e-mail": "", 
+		"url": "https://github.com/w-andre"
+	},
+	"contributors": [], 
+	"license": "MIT", 
+	"bugs": { 
+		"url": "https://github.com/w-andre/homebridge-symcon/issues"
+	},
+	"homepage": "https://github.com/w-andre/homebridge-symcon"
+}
