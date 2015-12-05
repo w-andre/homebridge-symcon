@@ -1,10 +1,10 @@
 # homebridge-symcon
 IP-Symcon plugin for homebridge
 
-# Installation (Debian)
+## Installation (Debian)
 
-1. install Debian 8.2 (Jessie)
-2. install dependencies (e.g. NodeJS, NPM):
+* Install Debian 8.2 (Jessie)
+* Install dependencies (e.g. NodeJS, NPM):
 ```
     $ sudo apt-get install libavahi-compat-libdnssd-dev
     $ sudo apt-get install libkrb5-dev
@@ -13,16 +13,16 @@ IP-Symcon plugin for homebridge
     $ sudo apt-get install build-essential
     $ sudo apt-get install git
 ```
-3. install Homebridge
+* Install Homebridge
 ```	
     $ sudo npm install -g homebridge
 ```	
-4. install Symcon-Plugin for Homebridge
+* Install Symcon-Plugin for Homebridge
 ```
     $ sudo npm install -g homebridge-symcon
 ```	
-5. create Homebridge configuration file 'config.json' in Directory .homebridge in user home (see config-sample.json)
-6. start Homebridge
+* Create Homebridge configuration file 'config.json' in Directory .homebridge in user home (see config-sample.json)
+* Start Homebridge
 ```
     $ homebridge
 ```
