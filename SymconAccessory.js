@@ -3,13 +3,14 @@
 var rpc = require("node-json-rpc");
 var async = require("async");
 
-function SymconAccessory(log, rpcClientOptions, hapService, hapCharacteristic, instanceId, displayName, instance, instanceConfig, services) {
+function SymconAccessory(log, rpcClientOptions, hapService, hapCharacteristic, instanceId, displayName, hierarchyPath, instance, instanceConfig, services) {
 	this.log = log;
 	this.rpcClientOptions = rpcClientOptions;
 	this.hapService = hapService;
 	this.hapCharacteristic = hapCharacteristic;
 	this.instanceId = instanceId;
 	this.name = displayName;
+	this.hierarchyPath = hierarchyPath;
 	this.uuid_base = instanceId.toString();
 	this.instance = instance;
 	this.instanceConfig = instanceConfig;
@@ -22,14 +23,17 @@ module.exports = SymconAccessory;
 SymconAccessory.prototype = {
 	
 	getHapService : function(serviceType, instanceId, instanceConfig) {
-		
 		var service;
 		
-		this.writeLogEntry("loading service " + instanceId + "...");
+		var serviceName = instanceConfig["InstanceName"].length < 65 
+			? instanceConfig["InstanceName"] 
+			: instanceConfig["InstanceName"].substring(0, 64);
+			
+		this.writeLogEntry("loading service '" + serviceName + "' (" + instanceId + ")...");
 				
 		switch (serviceType) {
 			case "Fan":
-				service = new this.hapService.Fan(this.name, instanceId);
+				service = new this.hapService.Fan(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig, 
@@ -43,7 +47,7 @@ SymconAccessory.prototype = {
 				
 				break;
 			case "GarageDoorOpener":
-				service = new this.hapService.GarageDoorOpener(this.name, instanceId);
+				service = new this.hapService.GarageDoorOpener(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -61,7 +65,7 @@ SymconAccessory.prototype = {
 				
 				break;
 			case "HumiditySensor":
-				service = new this.hapService.HumiditySensor(this.name, instanceId);
+				service = new this.hapService.HumiditySensor(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -78,7 +82,7 @@ SymconAccessory.prototype = {
 					this.hapCharacteristic.StatusTampered, 'StatusTampered', 'Enum', 0, 2, true);
 				break;
 			case "LightBulb":
-				service = new this.hapService.Lightbulb(instanceConfig["InstanceName"], instanceId);
+				service = new this.hapService.Lightbulb(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -94,7 +98,7 @@ SymconAccessory.prototype = {
 				
 				break;
 			case "LightSensor":
-				service = new this.hapService.LightSensor(this.name, instanceId);
+				service = new this.hapService.LightSensor(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -111,7 +115,7 @@ SymconAccessory.prototype = {
 					this.hapCharacteristic.StatusTampered, 'StatusTampered', 'Enum', 0, 2, true);
 				break;
 			case "LockMechanism":
-				service = new this.hapService.LockMechanism(this.name, instanceId);
+				service = new this.hapService.LockMechanism(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -121,7 +125,7 @@ SymconAccessory.prototype = {
 				
 				break;
 			case "Outlet":
-				service = new this.hapService.Outlet(this.name, instanceId);
+				service = new this.hapService.Outlet(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -131,7 +135,7 @@ SymconAccessory.prototype = {
 					
 				break;
 			case "Switch":
-				service = new this.hapService.Switch(this.name, instanceId);
+				service = new this.hapService.Switch(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -139,7 +143,7 @@ SymconAccessory.prototype = {
 				
 				break;
 			case "TemperatureSensor":
-				service = new this.hapService.TemperatureSensor(this.name, instanceId);
+				service = new this.hapService.TemperatureSensor(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -157,7 +161,7 @@ SymconAccessory.prototype = {
 				
 				break;
 			case "Thermostat":
-				service = new this.hapService.Thermostat(this.name, instanceId);
+				service = new this.hapService.Thermostat(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -183,7 +187,7 @@ SymconAccessory.prototype = {
 				
 				break;
 			case "WindowCovering":
-				service = new this.hapService.WindowCovering(this.name, instanceId);
+				service = new this.hapService.WindowCovering(serviceName, instanceId);
 				
 				// required
 				this.bindSpecificCharacteristic(serviceType, service, instanceId, instanceConfig,
@@ -231,15 +235,20 @@ SymconAccessory.prototype = {
 		
 		return service;
 	},
+	
+	identify: function(callback) {
+		this.writeLogEntry("Identify requested!");
+		this.writeLogEntry("Hierarchy path: " + this.hierarchyPath);
+	},
 
 	getServices : function() {
 		
 		var informationService = new this.hapService.AccessoryInformation();
 		
 		informationService
-			.setCharacteristic(this.hapCharacteristic.Name, this.displayName)
+			.setCharacteristic(this.hapCharacteristic.Name, this.name.length < 65 ? this.name : this.name.substring(0, 64))
 			.setCharacteristic(this.hapCharacteristic.Manufacturer, "Symcon")
-			.setCharacteristic(this.hapCharacteristic.Model, this.instance.ModuleInfo.ModuleName)
+			.setCharacteristic(this.hapCharacteristic.Model, this.hierarchyPath.length < 65 ? this.hierarchyPath : this.hierarchyPath.substring(0, 64))
 			.setCharacteristic(this.hapCharacteristic.SerialNumber, "ID" + this.instanceId);
 			
 		var accessoryServices = [];		
@@ -278,15 +287,15 @@ SymconAccessory.prototype = {
 		
 	setValue : function(serviceType, instanceId, characteristic, valueType, value, callback, context) {
 		var params = [instanceId, characteristic, valueType, value];
-		this.callRpcMethod("HKS" + serviceType + "_SetValue", params, callback);
+		this.callRpcMethod("HKS" + serviceType + "_SetValue", params, valueType, callback);
 	},
 	
 	getValue : function(serviceType, instanceId, characteristic, valueType, defaultValue, enumValueCount, callback, context) {
 		var params = [instanceId, characteristic, valueType, defaultValue, enumValueCount];
-		this.callRpcMethod("HKS" + serviceType + "_GetValue", params, callback);
+		this.callRpcMethod("HKS" + serviceType + "_GetValue", params, valueType, callback);
 	},
 	
-	callRpcMethod : function(method, params, callback) {
+	callRpcMethod : function(method, params, valueType, callback) {
 		this.writeLogEntry("Calling JSON-RPC method " + method + " with params " + JSON.stringify(params));
 
 		var that = this;
@@ -304,10 +313,25 @@ SymconAccessory.prototype = {
 					return;
 				}
 				
-				that.writeLogEntry("Called JSON-RPC method '" + method + "' with response: " + JSON.stringify(res.result));
+				var result;
+				switch (valueType) {
+					case 'Integer':
+					case 'Enum':
+					case 'Percent':
+						result = parseInt(res.result);
+						break;
+					case 'Float':
+						result = parseFloat(res.result);
+						break;
+					default:
+						result = res.result;
+						break;
+				}
+				
+				that.writeLogEntry("Called JSON-RPC method '" + method + "' with response: " + JSON.stringify(result));
 				if (callback) {
 					that.writeLogEntry('callback...');
-					callback(res.result);
+					callback(err, result);
 				}
 			}
 		);

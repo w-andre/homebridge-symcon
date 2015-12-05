@@ -64,7 +64,8 @@ SymconPlatform.prototype = {
 									function (parallelCallback) { that.callRpcMethod("IPS_GetName", [instanceId], parallelCallback); },
 									function (parallelCallback) { that.callRpcMethod("IPS_GetInstance", [instanceId], parallelCallback); },
 									function (parallelCallback) { that.callRpcMethod("IPS_GetConfiguration", [instanceId], parallelCallback); },
-									function (parallelCallback) { that.callRpcMethod("HKA_GetServicesWithConfiguration", [instanceId], parallelCallback); }
+									function (parallelCallback) { that.callRpcMethod("HKA_GetServicesWithConfiguration", [instanceId], parallelCallback); },
+									function (parallelCallback) { that.callRpcMethod("HKA_GetHierarchyPath", [instanceId], parallelCallback); }
 								],
 								function (err, results) {
 									var displayName = results[0].result;
@@ -79,6 +80,8 @@ SymconPlatform.prototype = {
 									var services = typeof results[3].result === 'object' 
 										? results[3].result
 										: JSON.parse(results[3].result);
+										
+									var hierarchyPath = results[4].result;
 									
 									var accessory = new SymconAccessory(
 										that.log, 
@@ -86,7 +89,8 @@ SymconPlatform.prototype = {
 										that.hap.Service, 
 										that.hap.Characteristic, 
 										instanceId, 
-										displayName, 
+										displayName,
+										hierarchyPath,
 										instance, 
 										instanceConfig,
 										services);
